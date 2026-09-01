@@ -1,4 +1,4 @@
-﻿[project]
+[project]
 name = "ts-knowledge-agent"
 version = "0.1.0"
 description = "Local-first agent for TS team knowledge ingestion and search"
@@ -14,3 +14,10 @@ ts-kb = "ts_knowledge_agent.cli:main"
 [tool.pytest.ini_options]
 pythonpath = ["backend"]
 testpaths = ["tests"]
+
+[tool.setuptools]
+package-dir = {"" = "backend"}
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["ts_knowledge_agent*"]
