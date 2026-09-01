@@ -1,13 +1,21 @@
+from __future__ import annotations
+
 import argparse
+from collections.abc import Sequence
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ts-kb")
     sub = parser.add_subparsers(dest="command")
     sub.add_parser("status")
     sub.add_parser("scan")
     sub.add_parser("search")
-    args = parser.parse_args()
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
