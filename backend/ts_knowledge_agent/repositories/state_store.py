@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
-from .scanner import SourceFile
+from ts_knowledge_agent.services.scanner import SourceFile
 
 
 class StateStore:
