@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import argparse
@@ -6,8 +5,8 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from ts_knowledge_agent.config import Settings
-from ts_knowledge_agent.scanner import scan_directory
-from ts_knowledge_agent.state_store import StateStore
+from ts_knowledge_agent.services.scanner import scan_directory
+from ts_knowledge_agent.repositories.state_store import StateStore
 
 
 def build_parser() -> argparse.ArgumentParser:
