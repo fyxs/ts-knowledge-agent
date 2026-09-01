@@ -1,21 +1,37 @@
-# TS Knowledge Agent
-
-TS 团队共享知识库的本地 Agent 应用。第一期实现本地知识源扫描、材料转换、知识沉淀、Git 同步和搜索服务；应用代码与 `ts-knowledge-base` 知识仓分离。
+# TS Knowledge Agent：V1 工程结构
 
 ## 技术基线
 
-- Frontend: React + TypeScript + Vite + Tailwind CSS
-- Backend: FastAPI + Python
-- Local state/index: SQLite + FTS5
-- Material conversion: MarkItDown（由应用运行环境管理）
-- Model: 沿用当前 Harness 工作模型
-- Agent UI protocol: AG-UI；一期先建立协议边界，默认 SSE，WebSocket 仅作后续特殊传输
-- Shared knowledge: fixed Git remote `git@github.com:fyxs/ts-knowledge-base.git`
+- 前端：React + TypeScript + Vite + `@assistant-ui/react`
+- 后端：FastAPI + Python
+- 本地状态和索引：SQLite + FTS5
+- 材料转换：MarkItDown（由应用运行环境管理）
+- 模型：沿用当前 Harness 工作模型
+- Agent 事件协议：AG-UI；默认 SSE，WebSocket 后置
+- 共享知识：固定 Git 仓 `git@github.com:fyxs/ts-knowledge-base.git`
 
-## Repository boundary
+## 目录
 
-本仓库存放 CLI、本地 Web、扫描、转换、索引、Git 同步和服务实现；团队知识内容存放在 `ts-knowledge-base`。
+```text
+ts-knowledge-agent/
+├── frontend/       React 前端
+├── backend/        Python 后端和应用核心
+├── scripts/        开发、验证和运维辅助脚本
+├── config/         示例和默认配置（不含密钥）
+├── docs/           设计、协议、决策和运行说明
+└── tests/          自动化测试
+```
 
-## Current status
+## 运行边界
 
-当前为可运行的基础工程骨架，核心业务尚未实现。先以接口、目录和测试边界稳定设计，再逐步实现垂直切片。
+每台成员机器本地运行 CLI、后台任务、SQLite 和 Web 应用。应用扫描成员配置的本地源目录，处理结果写入固定 Git 仓的成员空间；团队知识通过 Git 同步。
+
+原始文件、SQLite、日志、本机配置和模型密钥不进入代码仓库或团队知识仓。
+
+## 代码组织原则
+
+CLI、Web API 和定时 Worker 共享同一套 application services；不得各自实现扫描、转换、提炼、索引和 Git 同步逻辑。
+
+先完成垂直切片，再抽象公共模块；不为尚未实现的能力提前建立复杂目录和依赖。
+
+详细规则见 `docs/project-structure.md`。
