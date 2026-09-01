@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from ts_knowledge_agent.config import Settings
+from ts_knowledge_agent.services.converter import convert_file
 from ts_knowledge_agent.services.scanner import scan_directory
 from ts_knowledge_agent.repositories.state_store import StateStore
 
@@ -15,6 +16,9 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("status")
     scan = sub.add_parser("scan")
     scan.add_argument("--source-root", type=Path)
+    convert = sub.add_parser("convert")
+    convert.add_argument("--file", required=True, type=Path)
+    convert.add_argument("--output", type=Path)
     search = sub.add_parser("search")
     search.add_argument("query", nargs="*")
     return parser
@@ -34,6 +38,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"scanned={len(sources)} source_root={root}")
         finally:
             state.close()
+        return 0
+    if args.command == "convert":
+        source = args.file.expanduser().resolve()
+        output = args.output or (
+            settings.knowledge_repo
+            / "members"
+            / settings.member_id
+            / "converted"
+            / f"{source.stem}.md"
+        )
+        result = convert_file(source, output)
+        print(f"converted={result.output_path} bytes={result.bytes_written}")
         return 0
     if args.command == "status":
         state = StateStore(settings.knowledge_repo / "data" / "state.sqlite3")
