@@ -15,5 +15,8 @@ def test_settings_reads_canonical_configuration(tmp_path):
     config.write_text('{"personal_workspace":"wanghm","shared_source_directory":"D:/source","working_directory":"D:/work","shared_knowledge_repository_directory":"D:/work/kb","shared_knowledge_repository_url":"ssh://example/kb.git","scan_interval_minutes":7}', encoding="utf-8")
     settings = Settings.from_file(config)
     assert settings.personal_workspace == "wanghm"
+    assert settings.shared_source_directory == Path("D:/source")
+    assert settings.working_directory == Path("D:/work")
+    assert settings.shared_knowledge_repository_directory == Path("D:/work/kb")
     assert settings.shared_knowledge_repository_url == "ssh://example/kb.git"
     assert settings.scan_interval_minutes == 7
