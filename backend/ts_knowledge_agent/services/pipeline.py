@@ -17,6 +17,11 @@ class RunSummary:
     failed: int
 
 
+def output_path_for(settings: Settings, relative_path: str) -> Path:
+    relative = Path(relative_path)
+    return settings.knowledge_repo / "members" / settings.member_id / "converted" / relative.with_suffix(".md")
+
+
 def run_once(settings: Settings) -> RunSummary:
     state = StateStore(settings.knowledge_repo / "data" / "state.sqlite3")
     converted = skipped = failed = 0
@@ -24,10 +29,10 @@ def run_once(settings: Settings) -> RunSummary:
         sources = scan_directory(settings.source_root)
         for source in sources:
             state.upsert_source(source)
+            output = output_path_for(settings, source.relative_path)
             if not state.needs_conversion(source):
                 skipped += 1
                 continue
-            output = settings.knowledge_repo / "members" / settings.member_id / "converted" / f"{source.stem}.md"
             try:
                 result = convert_file(source.absolute_path, output)
                 state.record_conversion(source.relative_path, source.sha256, result.output_path, CONVERTER_VERSION, "converted")
