@@ -33,23 +33,23 @@
 - [ ] 转换结果写入索引，支持增量更新。
 - [ ] 源文件或转换结果缺失时更新索引状态。
 - [ ] 实现 `ts-kb search "关键词"`。
-- [ ] 返回路径、标题、摘要、成员空间和来源引用。
+- [ ] 返回路径、标题、摘要、个人知识仓库中的知识空间和来源引用。
 - [ ] 为中文、路径、空查询和无结果补充测试。
 
 ## 第三阶段：CLI 初始化与本地运行目录
 
-- [ ] 实现 `ts-kb init`。
-- [ ] 配置 `member_id` 和本地源目录。
-- [ ] 创建本地配置、数据、日志和运行目录。
-- [ ] 初始化或更新固定的 `ts-knowledge-base` 本地工作副本。
-- [ ] 检查 Python、MarkItDown、Git 和 SQLite 运行条件。
+- [x] 实现 `ts-kb init`，强制指定 working_directory、personal_workspace 和 shared_source_directory。
+- [ ] 配置 `personal_personal-workspace` 和本地源目录。
+- [x] 创建 working_directory 下的配置、data、logs、runtime 和共享知识仓目录。
+- [x] 根据 shared_knowledge_repository_url 拉取共享知识仓到 working_directory；拉取失败则初始化失败。
+- [x] 检查 Python、MarkItDown、Git 和 SQLite 运行条件。
 - [ ] 不把本地配置、SQLite、日志和原始素材写入 Git。
 
 ## 第四阶段：知识候选沉淀
 
-- [ ] 将转换材料写入 `members/<member_id>/converted/`。
+- [ ] 将转换材料写入 `members/<personal_personal-workspace>/converted/`。
 - [ ] 生成带 YAML frontmatter 的候选知识 Markdown。
-- [ ] 写入 `members/<member_id>/knowledge/candidate/`。
+- [ ] 写入 `members/<personal_personal-workspace>/knowledge/candidate/`。
 - [ ] 建立知识与源文件、转换结果的可追溯关系。
 - [ ] 明确 `candidate`、`verified`、`contested`、`deprecated` 状态。
 - [ ] 第一版不把转换结果直接视为已验证知识。
@@ -59,7 +59,7 @@
 
 - [ ] 实现 Git 适配器和 `ts-kb sync`。
 - [ ] 检查工作区、拉取远程更新并处理 fast-forward。
-- [ ] 只写入当前成员空间。
+- [ ] 只写入当前个人知识仓库中的知识空间。
 - [ ] 提交前检查凭据、日志、数据库和临时文件。
 - [ ] 处理冲突、push 失败和远程变化。
 - [ ] 推送后回读远程 SHA。
@@ -74,10 +74,10 @@
 
 ## 第七阶段：一次性任务与每小时调度
 
-- [ ] 实现 `ts-kb run-once`，串联扫描、转换、索引和同步。
+- [x] 实现 `ts-kb run-once`，串联扫描、转换、索引和同步。
 - [ ] 为每个阶段提供清晰的成功、失败和跳过统计。
-- [ ] 验证稳定后再接入 Windows 任务计划程序。
-- [ ] 默认每小时执行一次。
+- [x] 接入 Windows 任务计划程序。
+- [x] 默认每小时执行一次，并支持精确到分钟的配置。
 - [ ] 失败、冲突或异常变更时暂停推送并保留诊断信息。
 
 ## 第八阶段：FastAPI 知识服务
