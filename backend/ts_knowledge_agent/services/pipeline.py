@@ -23,18 +23,18 @@ class RunSummary:
 
 def output_path_for(settings: Settings, relative_path: str) -> Path:
     relative = Path(relative_path)
-    return settings.knowledge_repo / "members" / settings.workspace / "converted" / relative.with_suffix(".md")
+    return settings.shared_knowledge_repository_directory / "members" / settings.personal_workspace / "converted" / relative.with_suffix(".md")
 
 
 def run_once(settings: Settings, sync: bool = False) -> RunSummary:
-    state = StateStore(settings.knowledge_repo / "data" / "state.sqlite3")
+    state = StateStore(settings.shared_knowledge_repository_directory / "data" / "state.sqlite3")
     converted = skipped = failed = 0
     sync_status = "disabled"
     try:
-        prepared = prepare_repository(settings.knowledge_repo) if sync else None
+        prepared = prepare_repository(settings.shared_knowledge_repository_directory) if sync else None
         if prepared is not None and prepared.status != "ready":
             return RunSummary(0, 0, 0, 0, 0, prepared.status)
-        sources = scan_directory(settings.source_root)
+        sources = scan_directory(settings.shared_source_directory)
         for source in sources:
             state.upsert_source(source)
             output = output_path_for(settings, source.relative_path)
@@ -50,7 +50,7 @@ def run_once(settings: Settings, sync: bool = False) -> RunSummary:
                 failed += 1
         indexed = index_converted(settings)
         if sync and failed == 0:
-            sync_status = commit_and_push(settings.knowledge_repo, "Update converted knowledge").status
+            sync_status = commit_and_push(settings.shared_knowledge_repository_directory, "Update converted knowledge").status
         return RunSummary(len(sources), converted, skipped, failed, indexed, sync_status)
     finally:
         state.close()
