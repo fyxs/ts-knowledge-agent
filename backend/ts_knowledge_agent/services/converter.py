@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
+CONVERTER_VERSION = "markitdown"
+
 
 class Converter(Protocol):
     def convert(self, source: Path) -> str: ...

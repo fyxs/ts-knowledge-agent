@@ -23,6 +23,15 @@ class StateStore:
             status TEXT NOT NULL,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
+        CREATE TABLE IF NOT EXISTS conversions (
+            relative_path TEXT PRIMARY KEY,
+            source_sha256 TEXT NOT NULL,
+            output_path TEXT NOT NULL,
+            converter_version TEXT NOT NULL,
+            status TEXT NOT NULL,
+            error_message TEXT,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
         """)
         self.connection.commit()
 
@@ -39,6 +48,28 @@ class StateStore:
 
     def list_sources(self) -> list[sqlite3.Row]:
         return list(self.connection.execute("SELECT * FROM sources ORDER BY relative_path"))
+
+    def needs_conversion(self, source: SourceFile) -> bool:
+        row = self.connection.execute(
+            "SELECT source_sha256, status FROM conversions WHERE relative_path = ?",
+            (source.relative_path,),
+        ).fetchone()
+        return row is None or row["source_sha256"] != source.sha256 or row["status"] != "converted"
+
+    def record_conversion(self, relative_path: str, source_sha256: str, output_path: Path,
+                          converter_version: str, status: str, error_message: str | None = None) -> None:
+        self.connection.execute("""
+        INSERT INTO conversions(relative_path, source_sha256, output_path, converter_version, status, error_message)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(relative_path) DO UPDATE SET
+          source_sha256=excluded.source_sha256, output_path=excluded.output_path,
+          converter_version=excluded.converter_version, status=excluded.status,
+          error_message=excluded.error_message, updated_at=CURRENT_TIMESTAMP
+        """, (relative_path, source_sha256, str(output_path), converter_version, status, error_message))
+        self.connection.commit()
+
+    def list_conversions(self) -> list[sqlite3.Row]:
+        return list(self.connection.execute("SELECT * FROM conversions ORDER BY relative_path"))
 
     def close(self) -> None:
         self.connection.close()
