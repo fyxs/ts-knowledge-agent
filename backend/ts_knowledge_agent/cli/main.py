@@ -4,7 +4,7 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
-from ts_knowledge_agent.config import Settings, clone_knowledge_repo
+from ts_knowledge_agent.config import DEFAULT_SHARED_KNOWLEDGE_REPOSITORY_URL, Settings, clone_knowledge_repo, parse_interval_minutes
 from ts_knowledge_agent.repositories.state_store import StateStore
 from ts_knowledge_agent.services.converter import convert_file
 from ts_knowledge_agent.services.indexing import search_converted
@@ -17,13 +17,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ts-kb")
     sub = parser.add_subparsers(dest="command")
     init = sub.add_parser("init")
-    init.add_argument("--working-directory", "--workdir", dest="working_directory", required=True, type=Path)
-    init.add_argument("--personal-workspace", "--workspace", dest="personal_workspace", required=True, help="个人知识仓库中的知识空间，例如 wanghm")
-    init.add_argument("--shared-source-directory", "--source-root", dest="shared_source_directory", required=True, type=Path)
-    init.add_argument("--scan-interval-minutes", "--interval-minutes", dest="scan_interval_minutes", type=int, default=60)
-    init.add_argument("--shared-knowledge-repository-url", "--git-remote", dest="shared_knowledge_repository_url", default=None)
+    init.add_argument("--working-directory", required=True, type=Path)
+    init.add_argument("--personal-workspace", required=True, help="个人知识仓库中的知识空间，例如 wanghm")
+    init.add_argument("--shared-source-directory", required=True, type=Path)
+    init.add_argument("--scan-interval-minutes", type=int, default=60)
+    init.add_argument("--shared-knowledge-repository-url", default=DEFAULT_SHARED_KNOWLEDGE_REPOSITORY_URL)
     sub.add_parser("status")
-    scan = sub.add_parser("scan"); scan.add_argument("--shared-source-directory", "--source-root", dest="shared_source_directory", type=Path)
+    scan = sub.add_parser("scan"); scan.add_argument("--shared-source-directory", type=Path)
     convert = sub.add_parser("convert"); convert.add_argument("--file", required=True, type=Path); convert.add_argument("--output", type=Path)
     run = sub.add_parser("run-once"); run.add_argument("--sync", action="store_true")
     sub.add_parser("schedule")
@@ -37,7 +37,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.scan_interval_minutes < 1: parser.error("scan-interval-minutes must be at least 1 minute")
         if not args.personal_workspace.strip(): parser.error("personal-workspace must not be empty")
         if not str(args.shared_source_directory).strip(): parser.error("shared-source-directory must not be empty")
-        settings = Settings(personal_workspace=args.personal_workspace.strip(), shared_source_directory=args.shared_source_directory, working_directory=args.working_directory, shared_knowledge_repository_directory=args.working_directory / "knowledge-base" / "ts-knowledge-base", scan_interval_minutes=args.scan_interval_minutes, shared_knowledge_repository_url=args.shared_knowledge_repository_url or "git@github.com:fyxs/ts-knowledge-base.git")
+        settings = Settings(args.personal_workspace.strip(), args.shared_source_directory, args.working_directory, args.working_directory / "knowledge-base" / "ts-knowledge-base", args.scan_interval_minutes, args.shared_knowledge_repository_url)
         settings.working_directory.mkdir(parents=True, exist_ok=True); clone_knowledge_repo(settings); settings.write_file(settings.working_directory / "ts-kb.json")
         print(f"initialized working_directory={settings.working_directory} personal_workspace={settings.personal_workspace} shared_knowledge_repository_directory={settings.shared_knowledge_repository_directory}"); return 0
     settings = Settings.from_env()
