@@ -35,7 +35,7 @@ class SearchStore:
 
     def search(self, query: str, limit: int = 10) -> list[sqlite3.Row]:
         return list(self.connection.execute("""SELECT path, title,
-            snippet(documents_fts, 2, '[', ']', '…', 24) AS snippet
+            snippet(documents_fts, 2, '[', ']', '...', 24) AS snippet
             FROM documents_fts WHERE documents_fts MATCH ? LIMIT ?""", (query, limit)))
 
     def close(self) -> None:
