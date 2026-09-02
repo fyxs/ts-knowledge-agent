@@ -72,10 +72,31 @@ class Settings:
 def clone_knowledge_repo(settings: Settings) -> None:
     path = settings.shared_knowledge_repository_directory
     path.parent.mkdir(parents=True, exist_ok=True)
-    if (path / ".git").exists():
+    if (path / ".git").is_dir():
         return
     if path.exists() and any(path.iterdir()):
         raise RuntimeError(f"shared knowledge repository directory is not empty: {path}")
-    result = subprocess.run(["git", "clone", settings.shared_knowledge_repository_url, str(path)], capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
+    result = subprocess.run(
+        ["git", "clone", settings.shared_knowledge_repository_url, str(path)],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", check=False,
+    )
     if result.returncode:
         raise RuntimeError(result.stderr.strip() or result.stdout.strip())
+
+
+def initialize_working_directory(settings: Settings) -> None:
+    if not settings.shared_source_directory.is_dir():
+        raise RuntimeError(
+            "shared source directory does not exist or is not a directory: "
+            + str(settings.shared_source_directory)
+        )
+    settings.working_directory.mkdir(parents=True, exist_ok=True)
+    for name in ("data", "logs", "runtime"):
+        (settings.working_directory / name).mkdir(parents=True, exist_ok=True)
+    clone_knowledge_repo(settings)
+    config_path = settings.working_directory / "ts-kb.json"
+    settings.write_file(config_path)
+    if not config_path.is_file():
+        raise RuntimeError("failed to write configuration file")
+    if not (settings.shared_knowledge_repository_directory / ".git").is_dir():
+        raise RuntimeError("shared knowledge repository was not initialized")

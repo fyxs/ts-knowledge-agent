@@ -21,7 +21,7 @@ def test_interval_rejects_invalid_values():
 
 
 def test_scheduler_waits_configured_minutes():
-    settings = Settings("member", Path("."), Path("."), 7)
+    settings = Settings("wanghm", Path("."), Path("."), Path("."), 7)
     calls = []
     sleeps = []
     result = run_scheduler(

@@ -96,7 +96,7 @@ Git 远程仓库：git@github.com:fyxs/ts-knowledge-base.git
 成员本地配置项：
 
 ```text
-member_id
+personal_personal-workspace
 个人知识空间
 本地知识源目录
 本地服务端口等运行参数
@@ -111,6 +111,6 @@ member_id
 - 是否越过项目边界；
 - 是否产生重复业务逻辑；
 - 是否引入新的运行时依赖；
-- 是否影响固定 Git 仓和成员空间模型；
+- 是否影响固定 Git 仓和个人知识仓库中的知识空间模型；
 - 是否需要更新 docs、测试和 README；
 - 是否能通过最小编译/类型/单元验证。

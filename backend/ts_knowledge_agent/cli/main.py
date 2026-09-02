@@ -4,7 +4,7 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
-from ts_knowledge_agent.config import DEFAULT_SHARED_KNOWLEDGE_REPOSITORY_URL, Settings, clone_knowledge_repo, parse_interval_minutes
+from ts_knowledge_agent.config import DEFAULT_SHARED_KNOWLEDGE_REPOSITORY_URL, Settings, initialize_working_directory
 from ts_knowledge_agent.repositories.state_store import StateStore
 from ts_knowledge_agent.services.converter import convert_file
 from ts_knowledge_agent.services.indexing import search_converted
@@ -33,12 +33,21 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser(); args = parser.parse_args(argv)
+    if args.command is None:
+        parser.print_help(); return 0
     if args.command == "init":
         if args.scan_interval_minutes < 1: parser.error("scan-interval-minutes must be at least 1 minute")
         if not args.personal_workspace.strip(): parser.error("personal-workspace must not be empty")
         if not str(args.shared_source_directory).strip(): parser.error("shared-source-directory must not be empty")
-        settings = Settings(args.personal_workspace.strip(), args.shared_source_directory, args.working_directory, args.working_directory / "knowledge-base" / "ts-knowledge-base", args.scan_interval_minutes, args.shared_knowledge_repository_url)
-        settings.working_directory.mkdir(parents=True, exist_ok=True); clone_knowledge_repo(settings); settings.write_file(settings.working_directory / "ts-kb.json")
+        settings = Settings(
+            args.personal_workspace.strip(), args.shared_source_directory, args.working_directory,
+            args.working_directory / "knowledge-base" / "ts-knowledge-base",
+            args.scan_interval_minutes, args.shared_knowledge_repository_url.strip(),
+        )
+        try:
+            initialize_working_directory(settings)
+        except RuntimeError as exc:
+            parser.error(str(exc))
         print(f"initialized working_directory={settings.working_directory} personal_workspace={settings.personal_workspace} shared_knowledge_repository_directory={settings.shared_knowledge_repository_directory}"); return 0
     settings = Settings.from_env()
     if args.command == "scan":
