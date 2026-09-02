@@ -58,14 +58,24 @@ class Settings:
 
     def write_file(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        data = {"personal_workspace": self.personal_workspace, "shared_source_directory": str(self.shared_source_directory), "working_directory": str(self.working_directory), "shared_knowledge_repository_directory": str(self.shared_knowledge_repository_directory), "scan_interval_minutes": self.scan_interval_minutes, "shared_knowledge_repository_url": self.shared_knowledge_repository_url}
+        data = {
+            "personal_workspace": self.personal_workspace,
+            "shared_source_directory": str(self.shared_source_directory),
+            "working_directory": str(self.working_directory),
+            "shared_knowledge_repository_directory": str(self.shared_knowledge_repository_directory),
+            "scan_interval_minutes": self.scan_interval_minutes,
+            "shared_knowledge_repository_url": self.shared_knowledge_repository_url,
+        }
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def clone_knowledge_repo(settings: Settings) -> None:
     path = settings.shared_knowledge_repository_directory
     path.parent.mkdir(parents=True, exist_ok=True)
-    if (path / ".git").exists(): return
-    if path.exists() and any(path.iterdir()): raise RuntimeError(f"shared knowledge repository directory is not empty: {path}")
+    if (path / ".git").exists():
+        return
+    if path.exists() and any(path.iterdir()):
+        raise RuntimeError(f"shared knowledge repository directory is not empty: {path}")
     result = subprocess.run(["git", "clone", settings.shared_knowledge_repository_url, str(path)], capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
-    if result.returncode: raise RuntimeError(result.stderr.strip() or result.stdout.strip())
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or result.stdout.strip())
