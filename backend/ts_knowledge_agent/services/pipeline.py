@@ -23,7 +23,7 @@ class RunSummary:
 
 def output_path_for(settings: Settings, relative_path: str) -> Path:
     relative = Path(relative_path)
-    return settings.knowledge_repo / "members" / settings.member_id / "converted" / relative.with_suffix(".md")
+    return settings.knowledge_repo / "members" / settings.workspace / "converted" / relative.with_suffix(".md")
 
 
 def run_once(settings: Settings, sync: bool = False) -> RunSummary:
