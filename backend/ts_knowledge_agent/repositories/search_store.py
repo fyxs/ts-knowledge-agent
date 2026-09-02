@@ -4,6 +4,10 @@ import sqlite3
 from pathlib import Path
 
 
+def clean_text(value: str) -> str:
+    return value.lstrip("\ufeff")
+
+
 class SearchStore:
     def __init__(self, path: Path) -> None:
         self.path = path
@@ -25,11 +29,12 @@ class SearchStore:
         self.connection.commit()
 
     def upsert(self, path: str, title: str, content: str, sha256: str) -> None:
+        title, content = clean_text(title), clean_text(content)
         self.connection.execute("DELETE FROM documents_fts WHERE path = ?", (path,))
         self.connection.execute("""INSERT INTO documents(path,title,content,content_sha256)
             VALUES(?,?,?,?) ON CONFLICT(path) DO UPDATE SET title=excluded.title,
             content=excluded.content, content_sha256=excluded.content_sha256,
-            indexed_at=CURRENT_TIMESTAMP""", (path, title, content, sha256))
+            indexed_at=CURRENT_TIMESTAMP""", (path,title,content,sha256))
         self.connection.execute("INSERT INTO documents_fts(path,title,content) VALUES(?,?,?)", (path,title,content))
         self.connection.commit()
 
