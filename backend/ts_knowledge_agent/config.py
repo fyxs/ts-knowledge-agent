@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass
 import json
@@ -24,7 +24,7 @@ def parse_interval_minutes(value: str | None) -> int:
 
 @dataclass(frozen=True)
 class Settings:
-    member_id: str
+    workspace: str
     source_root: Path
     knowledge_repo: Path
     scan_interval_minutes: int = DEFAULT_SCAN_INTERVAL_MINUTES
@@ -39,7 +39,7 @@ class Settings:
             settings = cls.from_file(config_path)
         else:
             settings = cls(
-                member_id=os.getenv("TS_KB_MEMBER_ID", "local-member").strip() or "local-member",
+                workspace=os.getenv("TS_KB_MEMBER_ID", "local").strip() or "local",
                 source_root=Path(os.getenv("TS_KB_SOURCE_ROOT", ".")).expanduser(),
                 knowledge_repo=Path(os.getenv("TS_KB_KNOWLEDGE_REPO", str(workdir / "knowledge-base" / "ts-knowledge-base"))).expanduser(),
                 scan_interval_minutes=parse_interval_minutes(os.getenv("TS_KB_SCAN_INTERVAL_MINUTES")),
@@ -53,7 +53,7 @@ class Settings:
         data = json.loads(path.read_text(encoding="utf-8-sig"))
         workdir = Path(data["workdir"]).expanduser()
         return cls(
-            member_id=data["member_id"], source_root=Path(data["source_root"]).expanduser(),
+            workspace=data.get("workspace", data.get("member_id", "local")), source_root=Path(data["source_root"]).expanduser(),
             knowledge_repo=Path(data.get("knowledge_repo", str(workdir / "knowledge-base" / "ts-knowledge-base"))).expanduser(),
             scan_interval_minutes=parse_interval_minutes(str(data.get("scan_interval_minutes", 60))),
             git_remote=data.get("git_remote", DEFAULT_GIT_REMOTE), workdir=workdir,
@@ -61,7 +61,7 @@ class Settings:
 
     def with_env_overrides(self) -> "Settings":
         return Settings(
-            os.getenv("TS_KB_MEMBER_ID", self.member_id),
+            os.getenv("TS_KB_MEMBER_ID", self.workspace),
             Path(os.getenv("TS_KB_SOURCE_ROOT", str(self.source_root))).expanduser(),
             Path(os.getenv("TS_KB_KNOWLEDGE_REPO", str(self.knowledge_repo))).expanduser(),
             parse_interval_minutes(os.getenv("TS_KB_SCAN_INTERVAL_MINUTES", str(self.scan_interval_minutes))),
@@ -71,7 +71,7 @@ class Settings:
 
     def write_file(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        data = {"member_id": self.member_id, "source_root": str(self.source_root), "workdir": str(self.workdir), "knowledge_repo": str(self.knowledge_repo), "scan_interval_minutes": self.scan_interval_minutes, "git_remote": self.git_remote}
+        data = {"workspace": self.workspace, "source_root": str(self.source_root), "workdir": str(self.workdir), "knowledge_repo": str(self.knowledge_repo), "scan_interval_minutes": self.scan_interval_minutes, "git_remote": self.git_remote}
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
