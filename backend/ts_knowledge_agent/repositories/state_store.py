@@ -46,18 +46,22 @@ class StateStore:
         """, (source.relative_path, source.size, source.mtime_ns, source.sha256, status))
         self.connection.commit()
 
+    def mark_missing_sources(self, seen_paths: set[str]) -> int:
+        rows = self.connection.execute("SELECT relative_path FROM sources").fetchall()
+        missing = [row["relative_path"] for row in rows if row["relative_path"] not in seen_paths]
+        if missing:
+            self.connection.executemany("UPDATE sources SET status='source_missing', updated_at=CURRENT_TIMESTAMP WHERE relative_path=?", [(path,) for path in missing])
+            self.connection.commit()
+        return len(missing)
+
     def list_sources(self) -> list[sqlite3.Row]:
         return list(self.connection.execute("SELECT * FROM sources ORDER BY relative_path"))
 
     def needs_conversion(self, source: SourceFile) -> bool:
-        row = self.connection.execute(
-            "SELECT source_sha256, status FROM conversions WHERE relative_path = ?",
-            (source.relative_path,),
-        ).fetchone()
+        row = self.connection.execute("SELECT source_sha256, status FROM conversions WHERE relative_path = ?", (source.relative_path,)).fetchone()
         return row is None or row["source_sha256"] != source.sha256 or row["status"] != "converted"
 
-    def record_conversion(self, relative_path: str, source_sha256: str, output_path: Path,
-                          converter_version: str, status: str, error_message: str | None = None) -> None:
+    def record_conversion(self, relative_path: str, source_sha256: str, output_path: Path, converter_version: str, status: str, error_message: str | None = None) -> None:
         self.connection.execute("""
         INSERT INTO conversions(relative_path, source_sha256, output_path, converter_version, status, error_message)
         VALUES (?, ?, ?, ?, ?, ?)
