@@ -2,7 +2,7 @@
 
 ## 定位
 
-`ts-knowledge-agent` 是本地运行的知识生产与搜索应用，不是 `ts-knowledge-base` 的替代品，也不是通用执行型 Agent。
+`ts-team-knowledge-agent` 是本地运行的知识生产与搜索应用，不是 `ts-team-knowledge-base` 的替代品，也不是通用执行型 Agent。
 
 ## 分层
 
@@ -14,7 +14,7 @@ React Web UI（@assistant-ui/react）
         ├── 转换器：内置运行环境中的 MarkItDown
         ├── 提炼器：沿用 Harness 工作模型
         ├── 索引器：SQLite + FTS5
-        ├── Git 适配器：固定 ts-knowledge-base
+        ├── Git 适配器：固定 ts-team-knowledge-base
         └── 调度器：处理、索引、同步
 ```
 

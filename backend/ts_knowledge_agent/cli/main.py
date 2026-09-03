@@ -41,7 +41,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not str(args.shared_source_directory).strip(): parser.error("shared-source-directory must not be empty")
         settings = Settings(
             args.personal_workspace.strip(), args.shared_source_directory, args.working_directory,
-            args.working_directory / "knowledge-base" / "ts-knowledge-base",
+            args.working_directory / "knowledge-base" / "ts-team-knowledge-base",
             args.scan_interval_minutes, args.shared_knowledge_repository_url.strip(),
         )
         try:

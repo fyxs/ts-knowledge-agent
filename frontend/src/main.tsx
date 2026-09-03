@@ -54,7 +54,7 @@ function App() {
         </article>
       </section>
 
-      <footer><span>AG-UI：协议边界已确定，默认 SSE</span><span>Harness：沿用当前工作模型</span><span>ts-knowledge-base：固定远程仓</span></footer>
+      <footer><span>AG-UI：协议边界已确定，默认 SSE</span><span>Harness：沿用当前工作模型</span><span>ts-team-knowledge-base：固定远程仓</span></footer>
     </main>
   );
 }

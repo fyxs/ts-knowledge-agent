@@ -1,5 +1,5 @@
 [project]
-name = "ts-knowledge-agent"
+name = "ts-team-knowledge-agent"
 version = "0.1.0"
 description = "Local-first agent for TS team knowledge ingestion and search"
 requires-python = ">=3.11"
