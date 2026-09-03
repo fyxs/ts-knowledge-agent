@@ -41,6 +41,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         try: initialize_working_directory(settings)
         except (ValueError, RuntimeError) as exc: parser.error(str(exc))
         print(f"initialized working_directory={settings.working_directory} personal_workspace={settings.personal_workspace} shared_knowledge_repository_directory={settings.shared_knowledge_repository_directory}"); return 0
+    if args.command is None:
+        parser.print_help(); return 0
     settings = Settings.from_env()
     if args.command == "scan":
         state = StateStore(settings.shared_knowledge_repository_directory / "data" / "state.sqlite3")

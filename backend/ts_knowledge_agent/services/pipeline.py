@@ -27,11 +27,11 @@ def plan_batches(files: list[SourceFile], batch_size: int) -> list[ProcessingBat
 @dataclass(frozen=True)
 class RunSummary:
     scanned: int
-    queued: int
-    batches: int
-    converted: int
-    skipped: int
-    failed: int
+    queued: int = 0
+    batches: int = 0
+    converted: int = 0
+    skipped: int = 0
+    failed: int = 0
     missing: int = 0
     indexed: int = 0
     sync_status: str = "disabled"
