@@ -1,4 +1,4 @@
-﻿[project]
+[project]
 name = "ts-team-knowledge-agent"
 version = "0.1.0"
 description = "Local-first agent for TS team knowledge ingestion and search"
