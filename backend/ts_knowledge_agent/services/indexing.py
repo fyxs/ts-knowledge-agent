@@ -7,7 +7,7 @@ from ts_knowledge_agent.repositories.search_store import SearchStore
 
 
 def index_converted(settings: Settings) -> int:
-    root = settings.shared_knowledge_repository_directory / "members" / settings.personal_workspace / "converted"
+    root = settings.shared_knowledge_repository_directory / "members" / settings.personal_workspace 
     store = SearchStore(settings.shared_knowledge_repository_directory / "data" / "state.sqlite3")
     count = 0
     try:

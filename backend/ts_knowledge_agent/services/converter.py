@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
+from ts_knowledge_agent.services.quality import inspect_markdown
 
 CONVERTER_VERSION = "markitdown"
 

@@ -38,7 +38,7 @@ class RunSummary:
 
 
 def output_path_for(settings: Settings, relative_path: str) -> Path:
-    return settings.shared_knowledge_repository_directory / "members" / settings.personal_workspace / "converted" / Path(relative_path).with_suffix(".md")
+    return settings.shared_knowledge_repository_directory / "members" / settings.personal_workspace  / Path(relative_path).with_suffix(".md")
 
 
 def run_once(settings: Settings, sync: bool = False, batch_size: int = 25, converter=None, on_batch: Callable[[ProcessingBatch], None] | None = None) -> RunSummary:
