@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 
-DEFAULT_SHARED_KNOWLEDGE_REPOSITORY_URL = "git@github.com:fyxs/ts-knowledge-base.git"
+DEFAULT_SHARED_KNOWLEDGE_REPOSITORY_URL = "git@github.com:fyxs/ts-team-knowledge-base.git"
 DEFAULT_SCAN_INTERVAL_MINUTES = 60
 
 

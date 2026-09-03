@@ -19,7 +19,7 @@
 
 一期只处理本地知识源，不接入飞书、网盘、邮件等线上数据；单公司场景，不配置公司/项目范围。
 
-固定仓库：`git@github.com:fyxs/ts-knowledge-base.git`。应用源码独立位于 `ts-knowledge-agent`，不写入知识仓。
+固定仓库：`git@github.com:fyxs/ts-team-knowledge-base.git`。应用源码独立位于 `ts-team-knowledge-agent`，不写入知识仓。
 
 ## 3. 成员空间与共享
 
