@@ -2,18 +2,33 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
-from ts_knowledge_agent.adapters.git_sync import commit_and_push, prepare_repository
 from ts_knowledge_agent.config import Settings
 from ts_knowledge_agent.repositories.state_store import StateStore
 from ts_knowledge_agent.services.converter import CONVERTER_VERSION, convert_file
 from ts_knowledge_agent.services.indexing import index_converted
-from ts_knowledge_agent.services.scanner import scan_directory
+from ts_knowledge_agent.services.scanner import SourceFile, scan_directory
+
+
+@dataclass(frozen=True)
+class ProcessingBatch:
+    number: int
+    files: tuple[SourceFile, ...]
+
+
+def plan_batches(files: list[SourceFile], batch_size: int) -> list[ProcessingBatch]:
+    if batch_size < 1:
+        raise ValueError("batch size must be at least 1")
+    ordered = sorted(files, key=lambda item: item.relative_path.lower())
+    return [ProcessingBatch(i, tuple(ordered[start:start + batch_size])) for i, start in enumerate(range(0, len(ordered), batch_size), 1)]
 
 
 @dataclass(frozen=True)
 class RunSummary:
     scanned: int
+    queued: int
+    batches: int
     converted: int
     skipped: int
     failed: int
@@ -26,26 +41,30 @@ def output_path_for(settings: Settings, relative_path: str) -> Path:
     return settings.shared_knowledge_repository_directory / "members" / settings.personal_workspace / "converted" / Path(relative_path).with_suffix(".md")
 
 
-def run_once(settings: Settings, sync: bool = False) -> RunSummary:
+def run_once(settings: Settings, sync: bool = False, batch_size: int = 25, converter=None, on_batch: Callable[[ProcessingBatch], None] | None = None) -> RunSummary:
     state = StateStore(settings.shared_knowledge_repository_directory / "data" / "state.sqlite3")
     converted = skipped = failed = 0
-    sync_status = "disabled"
     try:
-        prepared = prepare_repository(settings.shared_knowledge_repository_directory) if sync else None
-        if prepared is not None and prepared.status != "ready": return RunSummary(0, 0, 0, 0, sync_status=prepared.status)
         sources = scan_directory(settings.shared_source_directory)
-        seen = set()
+        seen = {source.relative_path for source in sources}
         for source in sources:
-            seen.add(source.relative_path); state.upsert_source(source)
-            output = output_path_for(settings, source.relative_path)
-            if not state.needs_conversion(source): skipped += 1; continue
-            try:
-                result = convert_file(source.absolute_path, output)
-                state.record_conversion(source.relative_path, source.sha256, result.output_path, CONVERTER_VERSION, "converted"); converted += 1
-            except Exception as exc:
-                state.record_conversion(source.relative_path, source.sha256, output, CONVERTER_VERSION, "failed", str(exc)); failed += 1
+            state.upsert_source(source)
+        pending = [source for source in sources if state.needs_conversion(source)]
+        batches = plan_batches(pending, batch_size)
+        for batch in batches:
+            if on_batch: on_batch(batch)
+            for source in batch.files:
+                output = output_path_for(settings, source.relative_path)
+                try:
+                    result = convert_file(source.absolute_path, output, converter=converter)
+                    state.record_conversion(source.relative_path, source.sha256, result.output_path, CONVERTER_VERSION, "converted")
+                    converted += 1
+                except Exception as exc:
+                    state.record_conversion(source.relative_path, source.sha256, output, CONVERTER_VERSION, "failed", str(exc))
+                    failed += 1
+        skipped = len(sources) - len(pending)
         missing = state.mark_missing_sources(seen)
         indexed = index_converted(settings)
-        if sync and failed == 0: sync_status = commit_and_push(settings.shared_knowledge_repository_directory, "Update converted knowledge").status
-        return RunSummary(len(sources), converted, skipped, failed, missing, indexed, sync_status)
-    finally: state.close()
+        return RunSummary(len(sources), len(pending), len(batches), converted, skipped, failed, missing, indexed)
+    finally:
+        state.close()
